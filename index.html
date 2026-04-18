@@ -443,6 +443,179 @@
                 font-size: 12px;
             }
         }
+
+        /* Architecture diagram */
+        .arch-diagram {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin: 30px 0;
+        }
+
+        @media (min-width: 768px) {
+            .arch-diagram {
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+        }
+
+        .arch-block {
+            background: var(--bg-muted);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .arch-block.shared {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.06) 0%, rgba(118, 75, 162, 0.06) 100%);
+        }
+
+        .arch-block.tenant {
+            border-color: var(--accent);
+            background: rgba(40, 167, 69, 0.05);
+        }
+
+        .arch-block h4 {
+            font-size: 15px;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .arch-block.tenant h4 {
+            color: var(--accent);
+        }
+
+        .arch-block ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .arch-block li {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 6px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .arch-block li:last-child {
+            border-bottom: none;
+        }
+
+        .arch-block li strong {
+            color: var(--text-primary);
+        }
+
+        .arch-flow {
+            background: var(--bg-muted);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 11px;
+            color: var(--text-primary);
+            overflow-x: auto;
+            white-space: pre;
+            line-height: 1.5;
+        }
+
+        @media (min-width: 768px) {
+            .arch-flow {
+                font-size: 13px;
+                padding: 28px;
+            }
+        }
+
+        .phase-card {
+            background: var(--bg-muted);
+            border-radius: 10px;
+            padding: 24px;
+            margin: 18px 0;
+            border-left: 5px solid var(--primary);
+        }
+
+        .phase-card.pilot {
+            border-left-color: var(--accent-warn);
+            background: rgba(255, 193, 7, 0.05);
+        }
+
+        .phase-card.early {
+            border-left-color: var(--primary);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .phase-card.launch {
+            border-left-color: var(--accent);
+            background: rgba(40, 167, 69, 0.05);
+        }
+
+        .phase-card h4 {
+            font-size: clamp(17px, 4vw, 20px);
+            margin-bottom: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-primary);
+        }
+
+        .phase-card .phase-timeline {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 14px;
+        }
+
+        .phase-card .phase-goal {
+            font-size: 14px;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+            line-height: 1.6;
+        }
+
+        .phase-card ul {
+            margin: 10px 0 0 20px;
+            padding: 0;
+        }
+
+        .phase-card ul li {
+            font-size: 14px;
+            color: var(--text-secondary);
+            padding: 4px 0;
+            line-height: 1.5;
+        }
+
+        .phase-card .exit-criteria {
+            margin-top: 14px;
+            padding: 12px 14px;
+            background: var(--bg-light);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .phase-card .exit-criteria strong {
+            color: var(--text-primary);
+        }
+
+        .phase-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: white;
+            white-space: nowrap;
+        }
+
+        .phase-badge.pilot { background: var(--accent-warn); color: #5c4600; }
+        .phase-badge.early { background: var(--primary); }
+        .phase-badge.launch { background: var(--accent); }
     </style>
 </head>
 <body>
@@ -824,7 +997,263 @@
     <div class="slide-number">10</div>
 </div>
 
-<!-- Launch Plan slides (unchanged) start at Slide 11 -->
+<!-- Slide 11: Platform Architecture -->
+<div class="slide">
+    <div class="content">
+        <h2>Platform Architecture</h2>
+        <p style="font-size: clamp(15px, 4vw, 17px); margin: 20px 0; line-height: 1.7; color: var(--text-secondary);">
+            Multi-tenant serverless e-commerce built entirely on Cloudflare's edge. A merchant signs up on the landing page and within minutes has a fully-isolated store — their own admin dashboard, storefront on a branded subdomain, database, and Stripe Connect account.
+        </p>
+
+        <div class="arch-flow">   upcart.online (landing)            dashboard.upcart.online
+   ─ signup wizard ─                  ─ central admin UI ─
+          │                                  │
+          │  POST /provision                 │  POST /auth/login
+          ▼                                  ▼
+   ┌────────────────────────────────────────────────────┐
+   │   provisioning-service   (Cloudflare Worker)        │
+   │   • creates tenant resources on signup              │
+   │   • resolves email → tenant + worker_url on login   │
+   │   • proxies admin creds to the tenant's worker      │
+   └────────────────────────────────────────────────────┘
+          │ creates per-tenant
+          ▼ D1  •  R2  •  Worker  •  DNS
+   &lt;subdomain&gt;.upcart.online    ← per-tenant store worker
+   ├─ storefront (read-only public API)
+   ├─ admin API (JWT-scoped to this tenant)
+   ├─ Stripe Checkout + webhooks
+   └─ Stripe Connect (per-merchant payouts)</div>
+
+        <div class="arch-diagram">
+            <div class="arch-block shared">
+                <h4>Shared services</h4>
+                <ul>
+                    <li><strong>Landing</strong> — signup wizard, static site</li>
+                    <li><strong>Provisioning service</strong> — tenant factory + central login broker</li>
+                    <li><strong>Central dashboard</strong> — one SPA at dashboard.upcart.online for every merchant</li>
+                </ul>
+            </div>
+            <div class="arch-block tenant">
+                <h4>Per-tenant services</h4>
+                <ul>
+                    <li><strong>Backend Worker</strong> — isolated D1, R2, and JWT secret</li>
+                    <li><strong>Storefront</strong> — static site on a branded subdomain</li>
+                    <li><strong>Stripe Connect</strong> — merchant's own payout account</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">11</div>
+</div>
+
+<!-- Slide 12: Tech Stack & Isolation Model -->
+<div class="slide">
+    <div class="content">
+        <h2>Tech Stack &amp; Isolation Model</h2>
+        <p style="font-size: clamp(15px, 4vw, 17px); margin: 20px 0; line-height: 1.7; color: var(--text-secondary);">
+            Every tenant gets their own Worker, database, object storage, and subdomain — no shared data plane, no noisy-neighbour risk. Shared services are stateless brokers.
+        </p>
+
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Layer</th>
+                    <th>Technology</th>
+                    <th>Scope</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Runtime</strong></td><td>Cloudflare Workers + Hono (TypeScript)</td><td>Per tenant</td></tr>
+                <tr><td><strong>Database</strong></td><td>Cloudflare D1 (SQLite) — MongoDB Atlas for large catalogs</td><td>Per tenant</td></tr>
+                <tr><td><strong>Object storage</strong></td><td>Cloudflare R2</td><td>Per tenant</td></tr>
+                <tr><td><strong>Payments</strong></td><td>Stripe Checkout + Connect (Express)</td><td>Per merchant</td></tr>
+                <tr><td><strong>Shipping</strong></td><td>EasyPost (optional)</td><td>Per tenant</td></tr>
+                <tr><td><strong>Admin UI</strong></td><td>Vanilla JS + Bootstrap 5 SPA</td><td>Shared deployment</td></tr>
+                <tr><td><strong>Storefront</strong></td><td>Static HTML/CSS/JS + Stripe.js, 5 theme presets</td><td>Per tenant</td></tr>
+                <tr><td><strong>Provisioning</strong></td><td>Cloudflare Worker + Cloudflare REST API</td><td>Shared</td></tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 40px; font-size: clamp(18px, 4vw, 22px);">Platform-wide gaps to close before scaling</h3>
+        <div class="metric-row">
+            <div class="metric-item">
+                <h4>Testing &amp; CI</h4>
+                <div class="metric-desc">No automated tests and no CI today. Checkout, webhooks, provisioning, and admin auth all need coverage before public launch.</div>
+            </div>
+            <div class="metric-item">
+                <h4>Provisioning rate limit</h4>
+                <div class="metric-desc"><code>POST /provision</code> is unauthenticated and creates billable Cloudflare resources — must be gated before public access.</div>
+            </div>
+        </div>
+        <div class="metric-row">
+            <div class="metric-item">
+                <h4>Environment separation</h4>
+                <div class="metric-desc">Single <code>wrangler.toml</code> today. Need staging + production split before we accept real merchants.</div>
+            </div>
+            <div class="metric-item">
+                <h4>Admin dashboard refactor</h4>
+                <div class="metric-desc">2.5k-line single JS file. Split by view for maintainability before onboarding heavy merchant load.</div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">12</div>
+</div>
+
+<!-- Slide 13: Launch Phases Overview -->
+<div class="slide">
+    <div class="content">
+        <h2>Development &amp; Launch Plan</h2>
+        <p style="font-size: clamp(15px, 4vw, 17px); margin: 20px 0 40px; line-height: 1.7; color: var(--text-secondary);">
+            We're rolling out in three phases. Each phase has a clear goal, a bounded audience, and explicit exit criteria — we don't move to the next phase until the current one's risks are closed.
+        </p>
+
+        <div class="metric-row" style="grid-template-columns: 1fr;">
+            <div class="metric-item" style="border-left: 5px solid var(--accent-warn);">
+                <h4 style="color: var(--accent-warn);">Phase 1 · Pilot</h4>
+                <div class="metric-value" style="font-size: clamp(16px, 4vw, 20px);">5–10 hand-picked merchants</div>
+                <div class="metric-desc">Invite-only. Prove the core loop works end-to-end on real money.</div>
+            </div>
+        </div>
+        <div class="metric-row" style="grid-template-columns: 1fr;">
+            <div class="metric-item" style="border-left: 5px solid var(--primary);">
+                <h4 style="color: var(--primary);">Phase 2 · Public Early Access</h4>
+                <div class="metric-value" style="font-size: clamp(16px, 4vw, 20px);">Open signup, feedback-driven</div>
+                <div class="metric-desc">Anyone can sign up. Free trial + discounted paid tiers in exchange for feedback.</div>
+            </div>
+        </div>
+        <div class="metric-row" style="grid-template-columns: 1fr;">
+            <div class="metric-item" style="border-left: 5px solid var(--accent);">
+                <h4 style="color: var(--accent);">Phase 3 · Official Launch</h4>
+                <div class="metric-value" style="font-size: clamp(16px, 4vw, 20px);">GA + full pricing</div>
+                <div class="metric-desc">Marketing push, SLA-backed reliability, every tier priced as shown.</div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">13</div>
+</div>
+
+<!-- Slide 14: Phase 1 — Pilot -->
+<div class="slide">
+    <div class="content">
+        <h2>Phase 1 — Pilot</h2>
+
+        <div class="phase-card pilot">
+            <h4>Invite-only pilot <span class="phase-badge pilot">Weeks 0–8</span></h4>
+            <div class="phase-timeline">Audience: 5–10 hand-picked merchants we know personally (friends, small local businesses, existing contacts).</div>
+            <div class="phase-goal">
+                <strong>Goal:</strong> prove the full loop — signup → provision → list products → take a real Stripe payment → fulfill → payout — works for real merchants on live Stripe. Find the breakage before strangers do.
+            </div>
+
+            <h5 style="margin-top: 8px; color: var(--primary); font-size: 14px;">What we ship in this phase</h5>
+            <ul>
+                <li>Harden the provisioning pipeline (rate limit, auth, retry on Cloudflare API failures)</li>
+                <li>Staging + production split (separate <code>wrangler.toml</code> environments)</li>
+                <li>Stripe live mode + Connect onboarding for each pilot merchant</li>
+                <li>Structured logs + error alerting on provisioning and checkout webhooks</li>
+                <li>First automated tests on the critical paths: checkout, webhook, admin auth, provisioning</li>
+                <li>Direct Slack/SMS channel with every pilot merchant</li>
+            </ul>
+
+            <h5 style="margin-top: 16px; color: var(--primary); font-size: 14px;">What we measure</h5>
+            <ul>
+                <li>Time-to-first-sale per merchant (signup → first real order)</li>
+                <li>Provisioning success rate and median provisioning duration</li>
+                <li>Checkout success rate and webhook replay rate</li>
+                <li>Support tickets per merchant per week (we want this trending down)</li>
+            </ul>
+
+            <div class="exit-criteria">
+                <strong>Exit criteria → move to Phase 2:</strong> 30 consecutive days with zero data-loss incidents, ≥99% checkout success across pilot merchants, provisioning success ≥98%, and every pilot merchant has processed ≥10 real orders.
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">14</div>
+</div>
+
+<!-- Slide 15: Phase 2 — Public Early Access -->
+<div class="slide">
+    <div class="content">
+        <h2>Phase 2 — Public Early Access</h2>
+
+        <div class="phase-card early">
+            <h4>Open signup, feedback-driven <span class="phase-badge early">Months 3–9</span></h4>
+            <div class="phase-timeline">Audience: open signup with an "Early Access" badge. Target 200–500 tenants, ~50 paying.</div>
+            <div class="phase-goal">
+                <strong>Goal:</strong> get real merchants from outside our network using the product, collect structured feedback, and make the changes that matter before we commit to full pricing and marketing. Everything we ship here is reversible.
+            </div>
+
+            <h5 style="margin-top: 8px; color: var(--primary); font-size: 14px;">Pricing during early access</h5>
+            <ul>
+                <li>Free trial runs at 3 months as designed, with AdSense on the trial storefront</li>
+                <li>Early-access discount on paid tiers: <strong>50% off Basic &amp; Professional</strong> locked in for 12 months for anyone who upgrades during this phase</li>
+                <li>Transaction fees unchanged — these keep unit economics honest even at discount</li>
+                <li>Business &amp; Enterprise not publicly sold yet; handled as bespoke onboarding</li>
+            </ul>
+
+            <h5 style="margin-top: 16px; color: var(--primary); font-size: 14px;">What we ship in this phase</h5>
+            <ul>
+                <li>In-product feedback widget + monthly merchant survey + weekly office hours</li>
+                <li>Split the admin dashboard SPA by view (maintainability before load grows)</li>
+                <li>CI on every PR: <code>tsc --noEmit</code> + <code>wrangler deploy --dry-run</code> + unit tests</li>
+                <li>Billing + subscription management in the central dashboard</li>
+                <li>Onboarding wizard polish, first-run theme picker, storefront preview</li>
+                <li>Status page + incident comms playbook</li>
+            </ul>
+
+            <h5 style="margin-top: 16px; color: var(--primary); font-size: 14px;">What we measure</h5>
+            <ul>
+                <li>Trial-to-paid conversion (target ≥10%, plan assumes 12%)</li>
+                <li>Weekly active merchants and 30-day retention on paid tiers</li>
+                <li>Top 5 feedback themes per month — and how many we closed</li>
+                <li>Infra cost per tenant vs. the $8–12 trial assumption</li>
+            </ul>
+
+            <div class="exit-criteria">
+                <strong>Exit criteria → move to Phase 3:</strong> ≥100 paying tenants, trial-to-paid conversion ≥10% for 2 consecutive months, p95 uptime ≥99.5%, no P0 incidents for 60 days, and the top feedback themes from month 1 have been shipped or explicitly declined.
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">15</div>
+</div>
+
+<!-- Slide 16: Phase 3 — Official Launch -->
+<div class="slide">
+    <div class="content">
+        <h2>Phase 3 — Official Launch</h2>
+
+        <div class="phase-card launch">
+            <h4>General availability <span class="phase-badge launch">Month 9+</span></h4>
+            <div class="phase-timeline">Audience: everyone. Marketing push, content, paid acquisition, partnerships.</div>
+            <div class="phase-goal">
+                <strong>Goal:</strong> scale from early access into the Year-1 target of ~3,000 tenants / ~400 paying / $15K MRR, on reliability guarantees merchants can put in their own business plans.
+            </div>
+
+            <h5 style="margin-top: 8px; color: var(--primary); font-size: 14px;">What we ship in this phase</h5>
+            <ul>
+                <li>Full pricing live — Free Trial, Basic ($19.99), Professional ($49.99), Business ($99.99), Enterprise</li>
+                <li>Business tier opened to self-serve with the 3.5% + $0.40 platform fee (always profitable)</li>
+                <li>Enterprise sales motion: dedicated AM, SLA contracts, custom integrations</li>
+                <li>Public SLA: 99.9% uptime, published incident history, status page</li>
+                <li>Public API docs + webhooks, partner theme marketplace</li>
+                <li>Content &amp; SEO (comparison guides, case studies from pilot + early-access merchants)</li>
+                <li>Paid acquisition funnel tied to the trial conversion model</li>
+            </ul>
+
+            <h5 style="margin-top: 16px; color: var(--primary); font-size: 14px;">What we measure</h5>
+            <ul>
+                <li>MRR, ARR, and tenant count vs. the 5-year projection</li>
+                <li>CAC payback &lt;12 months across paid channels</li>
+                <li>Net revenue retention ≥100% on Basic+ tiers</li>
+                <li>SLA adherence and mean-time-to-recovery per incident</li>
+            </ul>
+
+            <div class="exit-criteria">
+                <strong>Definition of done for launch:</strong> every item above is in production, the pricing page at upcart.online shows all tiers, and the first marketing campaign has run for 30 days with measurable conversion attached.
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">16</div>
+</div>
 
 <!-- Slide 17: 5-Year Growth Projection -->
 <div class="slide">
